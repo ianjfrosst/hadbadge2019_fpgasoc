@@ -133,10 +133,6 @@ module top_fpga(
 
 	wire clkint;
 
-	wire [13:0] led;
-	assign ledc = led[10:0];
-	assign leda = 3'b001;
-
 	soc soc (
 		.clk24m(clk24m),
 		.clk48m(clk48m),
@@ -144,7 +140,8 @@ module top_fpga(
 		.clkint(clkint),
 		.rst(rst_soc),
 		.btn(btn),
-		.led(led),
+		.ledc(ledc),
+		.leda(leda),
 		.uart_tx(uart_tx),
 		.uart_rx(uart_rx),
 

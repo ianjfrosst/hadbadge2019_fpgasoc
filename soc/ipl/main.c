@@ -112,14 +112,14 @@ void gfx_set_xlate_val(int layer, int xcenter, int ycenter, float scale, float r
 	float dy_y=cos(rot)*scale_inv;
 	float start_x=-xcenter;
 	float start_y=-ycenter;
-	
+
 	int i_dx_x=64.0*dx_x;
 	int i_dx_y=64.0*dx_y;
 	int i_dy_x=64.0*dy_x;
 	int i_dy_y=64.0*dy_y;
 	int i_start_x=(-start_x+start_x*dx_x-start_y*dx_y)*64.0;
 	int i_start_y=(-start_y+start_y*dy_y-start_x*dy_x)*64.0;
-	
+
 	GFX_REG(GFX_TILEA_OFF)=(i_start_y<<16)+(i_start_x&0xffff);
 	GFX_REG(GFX_TILEA_INC_COL)=(i_dx_y<<16)+(i_dx_x&0xffff);
 	GFX_REG(GFX_TILEA_INC_ROW)=(i_dy_y<<16)+(i_dy_x&0xffff);
@@ -324,10 +324,9 @@ int show_main_menu(char *app_name, int *ret_flags) {
 	int bgnd_pal_state=10;
 	int selected=-1;
 	int done=0; // 0 - not done, 1 - done and start selection, 2 - done and restart
-	const char scrtxt[]="                       "
-						"Welcome to the Hackaday Supercon 2019 IPL menu thingy! Select an app "
-						"or insert an USB cable to modify the files on the flash. Have fun!"
-						"                       ";
+	const char scrtxt[]="             "
+						"@ianjfrosst owns this badge!"
+						"             ";
 	int scrpos=0;
 
 	//Generate copper list to transform the center of the screen into a barrel-ish
@@ -394,7 +393,7 @@ int show_main_menu(char *app_name, int *ret_flags) {
 			// Convert sin/cosine output from [0,255] to [-1.0, 1,0]
 			float sin8 = (sin8_C(angle8)-0x7F)/128.0;
 			float cos8 = (cos8_C(angle8)-0x7F)/128.0;
-			set_sprite(sprno++, x, 280+sin8*20, 16+cos8*8, 16+cos8*8, scrtxt[scrpos/SCR_PITCH+sprno], 0);
+			set_sprite(sprno++, x, 280+sin8*16, 16, 16, scrtxt[scrpos/SCR_PITCH+sprno], 0);
 			#else
 			set_sprite(sprno++, x, 280+sin(a)*20, 16+cos(a)*8, 16+cos(a)*8, scrtxt[scrpos/SCR_PITCH+sprno], 0);
 			#endif
@@ -463,7 +462,7 @@ int show_main_menu(char *app_name, int *ret_flags) {
 		wait_for_next_frame(cur_vbl_ctr+1); //we run at 30fps
 		old_btn=btn;
 	}
-	
+
 	if (selected>=0) {
 		if (menu.flag[selected]&ITEM_FLAG_ON_CART) {
 			sprintf(app_name, "/cart/%s", menu.item[selected]);
@@ -561,20 +560,12 @@ void main() {
 		printf("Found and loaded PIC payload from internal flash.\n");
 	}
 
-
 	//Initialize the LCD
 	lcd_init(simulated());
-	
+
 	int leds_on=read_leds_on();
 	MISC_REG(MISC_LED_REG) = leds_on;
 
-	// Basic startup chime.
-	SYNTHREG(0xF0) = 0x00000200;
-	SYNTHREG(0x40) = 0x00151800;
-	SYNTHREG(0x50) = 0x00251E00;
-	SYNTHREG(0x60) = 0x00352400;
-	SYNTHREG(0x70) = 0x00453000;
-    
 	//Skip autoexec when user is holding down the designated bypass key
 	if(!(MISC_REG(MISC_BTN_REG)&BUTTON_B)) {
 		//See if there's an autoexec.elf we can run.
@@ -603,9 +594,12 @@ void main() {
 	tusb_init();
 	printf("USB inited.\n");
 
+	// mach_cpu_enable(CPU_1);
+
 	//Main loop
 	while(1) {
-		MISC_REG(MISC_LED_REG) = leds_on;
+		MISC_REG(MISC_LED_REG) = 0x07FF;
+		MISC_REG(MISC_LED_COL_REG) = 0b010;
 		printf("IPL running.\n");
 		char app_name[256]="*na*";
 		int flags=0;

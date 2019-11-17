@@ -37,7 +37,8 @@ module soc(
 		input rst,
 		input clkint, //internal clock of ecp5, <24MHz, used for rng
 		input [7:0] btn,
-		output [13:0] led,
+		output [10:0] ledc,
+		output [2:0] leda,
 		output uart_tx,
 		input uart_rx,
 		output irda_tx,
@@ -375,6 +376,11 @@ module soc(
 	wire adc_valid;
 	wire [15:0] adc_value;
 
+	reg [15:0] led_en;
+	reg [15:0] led_col;
+	assign ledc = led_en[10:0];
+	assign leda = led_col[2:0];
+
 	parameter MISC_REG_LED = 0;
 	parameter MISC_REG_BTN = 1;
 	parameter MISC_REG_SOC_VER = 2;
@@ -400,6 +406,7 @@ module soc(
 	parameter MISC_REG_GPEXT_OE = 24;
 	parameter MISC_REG_GPEXT_W2S = 25;
 	parameter MISC_REG_GPEXT_W2C = 26;
+	parameter MISC_REG_LED_COL = 27;
 
 	wire [31:0] rngno;
 	rng rng(
@@ -434,7 +441,7 @@ module soc(
 		end else if (mem_addr[31:28]=='h2) begin
 			misc_select = mem_valid;
 			if (mem_addr[6:2]==MISC_REG_LED) begin
-				mem_rdata = { 16'h0, pic_led };
+				mem_rdata = { 16'h0, led_en };
 			end else if (mem_addr[6:2]==MISC_REG_BTN) begin
 				mem_rdata = { 24'h0, ~btn};
 			end else if (mem_addr[6:2]==MISC_REG_SOC_VER) begin
@@ -471,6 +478,8 @@ module soc(
 				mem_rdata = {1'h0, irda_sd, 6'h0, pmod_out, 2'h0, sao2_out, 2'h0, sao1_out};
 			end else if (mem_addr[6:2]==MISC_REG_GPEXT_OE) begin
 				mem_rdata = {8'h0, pmod_oe, 2'h0, sao2_oe, 2'h0, sao1_oe};
+			end else if (mem_addr[6:2]==MISC_REG_LED_COL) begin
+				mem_rdata = {16'h0, led_col};
 			end else begin
 				mem_rdata = 0;
 			end
@@ -650,10 +659,11 @@ module soc(
 		.rst(rst)
 	);
 
+	/*
 	reg [15:0] pic_led;
 	wire [15:0] pic_led_out;
 	// assign led = {pic_led_out[10:8], pic_led_out[5:0]};
-	assign led = pic_led[13:0];
+	// assign led = pic_led[13:0];
 
 	pic_wrapper #(
 		.ROM_HEX("pic/rom_initial.hex")
@@ -670,7 +680,7 @@ module soc(
 		.ren(pic_select && mem_wstrb==4'b0000),
 		.ready(pic_ready)
 	);
-
+	*/
 
 	wire [15:0] audio_l;
 	wire [15:0] audio_r;
@@ -934,7 +944,8 @@ module soc(
 	//misc reg write ops, registered
 	always @(posedge clk48m) begin
 		if (rst) begin
-			pic_led <= 0;
+			led_en <= 0;
+			led_col <= 1;
 			cpu_resetn <= 1;
 			flash_claim <= 0;
 			fsel_strobe <= 0;
@@ -953,7 +964,7 @@ module soc(
 			flash_dma_run <= 0;
 			if (misc_select && mem_wstrb[0]) begin
 				if (mem_addr[6:2]==MISC_REG_LED) begin
-					pic_led <= mem_wdata[16:0];
+					led_en <= mem_wdata[15:0];
 				end else if (mem_addr[6:2]==MISC_REG_SOC_VER) begin
 					trace_en <= mem_wdata[0];
 				end else if (mem_addr[6:2]==MISC_REG_RESETN) begin
@@ -1006,6 +1017,8 @@ module soc(
 					pmod_out <= pmod_out & ~mem_wdata[23:16];
 					sao2_out <= sao2_out & ~mem_wdata[13:8];
 					sao1_out <= sao1_out & ~mem_wdata[5:0];
+				end else if (mem_addr[6:2]==MISC_REG_LED_COL) begin
+					led_col <= mem_wdata[15:0];
 				end
 			end
 		end
