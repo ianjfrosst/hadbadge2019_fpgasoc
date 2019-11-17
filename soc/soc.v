@@ -354,9 +354,6 @@ module soc(
 	wire [31:0] usb_rdata;
 	wire usb_ready;
 	reg usb_select;
-	wire [31:0] pic_rdata;
-	wire pic_ready;
-	reg pic_select;
 	wire [31:0] psram_rdata;
 	wire psram_ready;
 	reg psram_select;
@@ -425,7 +422,6 @@ module soc(
 		misc_select = 0;
 		lcd_select = 0;
 		usb_select = 0;
-		pic_select = 0;
 		audio_select = 0;
 		psram_select = 0;
 		linerenderer_select=0;
@@ -497,9 +493,6 @@ module soc(
 		end else if (mem_addr[31:28]=='h6) begin
 			usb_select = mem_valid;
 			mem_rdata = usb_rdata;
-		end else if (mem_addr[31:28]=='h7) begin
-			pic_select = mem_valid;
-			mem_rdata = pic_rdata;
 		end else if (mem_addr[31:28]=='h8) begin
 			audio_select = mem_valid;
 			mem_rdata = audio_rdata;
@@ -522,7 +515,7 @@ module soc(
 `endif
 
 	assign mem_ready = ram_ready || uart_ready || irda_ready || misc_select ||
-			lcd_ready || linerenderer_ready || usb_ready || pic_ready || audio_ready || psram_ready ||| bus_error;
+			lcd_ready || linerenderer_ready || usb_ready || audio_ready || psram_ready ||| bus_error;
 
 	dsadc dsadc (
 		.clk(clk48m),
@@ -658,27 +651,6 @@ module soc(
 		.bus_we(mem_wstrb != 0),
 		.clk(clk48m),
 		.rst(rst)
-	);
-
-	reg [15:0] pic_led;
-	wire [15:0] pic_led_out;
-	// assign led = {pic_led_out[10:8], pic_led_out[5:0]};
-	// assign led = pic_led[13:0];
-
-	pic_wrapper #(
-		.ROM_HEX("pic/rom_initial.hex")
-	) pic (
-		.clk(clk48m),
-		.reset(rst),
-		.gpio_in(pic_led),
-		.gpio_out(pic_led_out),
-		.rng(rngno[7:0]),
-		.address(mem_addr),
-		.data_in(mem_wdata),
-		.data_out(pic_rdata),
-		.wen(pic_select && mem_wstrb==4'b1111),
-		.ren(pic_select && mem_wstrb==4'b0000),
-		.ready(pic_ready)
 	);
 
 

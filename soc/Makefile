@@ -5,7 +5,7 @@ BADGE_VER ?= 4
 PROJ=soc
 #Seed for nextpnr. Change this to another random value if you happen to run
 #into a situation that mis-synths or takes extremely long to synth the SoC.
-SEED = 200
+SEED = 888
 
 # Sources
 	# Base
@@ -113,23 +113,6 @@ SRC += $(addprefix usb/, \
 
 SRC += usb_soc.v
 
-	# PIC
-SRC += $(addprefix pic/, \
-	dpram_1kx16.v \
-	pic_wrapper.v \
-	risc16f84_clk2x.v \
-)
-
-SRC_SYNTH += $(addprefix pic/, \
-	pic_progmem_ecp5.v \
-	pic_datamem_ecp5.v \
-)
-
-SRC_SIM += $(addprefix pic/, \
-	pic_progmem_sim.v \
-	pic_datamem_sim.v \
-)
-
 	# Audio
 SRC += $(addprefix audio/, \
 	audio_mix.v \
@@ -230,7 +213,7 @@ VR_TRACE_CFLAGS := -DVERILATOR_USE_VCD=1
 endif
 
 verilator-build/Vsoc: $(SRC) $(SRC_SIM) $(BRAMFILE)
-	verilator -Iusb -CFLAGS "-ggdb `sdl2-config --cflags` $(VR_TRACE_CFLAGS)" -LDFLAGS "`sdl2-config --libs`" --assert \
+	verilator -Iusb -CFLAGS "-ggdb sdl2-config --cflags` $(VR_TRACE_CFLAGS)" -LDFLAGS "`sdl2-config --libs`" --assert \
 			$(VR_TRACE_OPTS) --Mdir verilator-build -Wno-style -Wno-fatal -cc --top-module soc \
 			-O3 --noassert --exe $(SRC) $(SRC_SIM)
 	$(MAKE) OPT_FAST="-O2 -fno-stack-protector" -C verilator-build -f Vsoc.mk

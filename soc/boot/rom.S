@@ -81,7 +81,7 @@ cart_boot_flag:
 do_reset:
 	//see if we are the 2nd cpu
 	li a1, MISC_OFFSET
-	lw a2,MISC_CPU_NO(a1)
+	lw a2, MISC_CPU_NO(a1)
 	bne a2, zero, secondcpu
 
 	//Set up UART divider for 115200
