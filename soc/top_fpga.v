@@ -33,14 +33,14 @@ PLL, tristate buffers etc needed to interface with the hardware.
 
 
 module top_fpga(
-		input clk, 
-		input [7:0] btn, 
+		input clk,
+		input [7:0] btn,
 `ifdef BADGE_V3
 		output [10:0] ledc,
 		output [2:0] leda,
 		inout [29:0] genio,
 `elsif BADGE_PROD
-		output [9:0] ledc,
+		output [10:0] ledc,
 		output [2:0] leda,
 		inout [29:0] genio,
 `else
@@ -82,7 +82,7 @@ module top_fpga(
 		output fsel_d,
 		output fsel_c,
 		output programn,
-		
+
 		output [3:0] gpdi_dp, gpdi_dn,
 		inout usb_dp,
 		inout usb_dm,
@@ -159,9 +159,9 @@ module top_fpga(
 		.led(led)
 	);
 `elsif BADGE_PROD
-	wire [8:0] led;
-	assign ledc = led;
-	assign leda = 3'b1;
+	wire [13:0] led;
+	assign ledc = led[10:0];
+	assign leda = 3'b001;
 `endif
 
 	soc soc (
@@ -304,7 +304,7 @@ module top_fpga(
 		.USRMCLKTS(!flash_selected)
 	) /* synthesis syn_noprune=1 */;
 
-	//Note: JTAG specs say we should sample on the rising edge of TCK. However, the LA readings show that 
+	//Note: JTAG specs say we should sample on the rising edge of TCK. However, the LA readings show that
 	//this would be cutting it very close wrt sample/hold times... what's wise here?
 	//Edit: Rising edge seems not to work. Using falling edge instead.
 	//Note: TDO is not implemented atm.
@@ -320,8 +320,6 @@ module top_fpga(
 		.JCE2(jce2),  //1 if data shifted into this reg
 		.JCE1(jce1)
 	);
-
-
 
 	//Janky JTAG DR implementation.
 	reg oldjshift;

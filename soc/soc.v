@@ -36,8 +36,8 @@ module soc(
 		input clk96m,
 		input rst,
 		input clkint, //internal clock of ecp5, <24MHz, used for rng
-		input [7:0] btn, 
-		output [8:0] led,
+		input [7:0] btn,
+		output [13:0] led,
 		output uart_tx,
 		input uart_rx,
 		output irda_tx,
@@ -73,7 +73,7 @@ module soc(
 		output fsel_c,
 		output reg fsel_d,
 		output programn,
-		
+
 		input vid_pixelclk,
 		input vid_fetch_next,
 		input vid_next_line,
@@ -81,7 +81,7 @@ module soc(
 		output [7:0] vid_red,
 		output [7:0] vid_green,
 		output [7:0] vid_blue,
-		
+
 		output [31:0] dbgreg_out,
 		input [31:0] dbgreg_in,
 		input dbgreg_strobe,
@@ -107,7 +107,7 @@ module soc(
 		input [7:0] pmod_in,
 		output reg [7:0] pmod_out,
 		output reg [7:0] pmod_oe,
-		
+
 		output reg trace_en
 	);
 
@@ -246,11 +246,11 @@ module soc(
 		.mem_data(`SLICE_32(arb_wdata, FLASHDMA_ARB_PRT)),
 		.mem_wr(arb_valid[FLASHDMA_ARB_PRT]),
 		.mem_rdy(arb_ready[FLASHDMA_ARB_PRT]),
-		
+
 		.src_data(flash_dmadata),
 		.src_strobe(flash_dmastrobe),
 		.src_done(flash_dmadone),
-		
+
 		.dst_addr(flash_dmaaddr),
 		.len(flash_dmalen),
 		.run(flash_dma_run),
@@ -652,9 +652,8 @@ module soc(
 
 	reg [15:0] pic_led;
 	wire [15:0] pic_led_out;
-	assign led = {pic_led_out[10:8], pic_led_out[5:0]};
-
-//	assign led = {1'b0, pic_led[7:0]}; //Wondering why that LED doesn't work?
+	// assign led = {pic_led_out[10:8], pic_led_out[5:0]};
+	assign led = pic_led[13:0];
 
 	pic_wrapper #(
 		.ROM_HEX("pic/rom_initial.hex")
@@ -728,7 +727,7 @@ module soc(
 	) qpi_arb (
 		.clk(clk48m),
 		.reset(rst),
-		
+
 		.addr(qpimem_arb_addr),
 		.wdata(qpimem_arb_wdata),
 		.rdata(qpimem_arb_rdata),
@@ -760,7 +759,7 @@ module soc(
 	) qpimem_cache (
 		.clk(clk48m),
 		.rst(rst),
-		
+
 		.qpi_do_read(qpimem_arb_do_read[0]),
 		.qpi_do_write(qpimem_arb_do_write[0]),
 		.qpi_next_word(qpimem_arb_next_word[0]),
@@ -768,7 +767,7 @@ module soc(
 		.qpi_wdata(`SLICE_32(qpimem_arb_wdata, 0)),
 		.qpi_rdata(`SLICE_32(qpimem_arb_rdata, 0)),
 		.qpi_is_idle(qpimem_arb_is_idle[0]),
-	
+
 		.wen(mem_addr[24]==0 ? mem_wen : 4'b0),
 		.ren(mem_valid && !mem_ready && mem_select && mem_wstrb==0),
 		.addr(mem_addr[23:2]),
@@ -892,7 +891,7 @@ module soc(
 	) flash_iface (
 		.clk(clk48m),
 		.rst(rst),
-		
+
 		//qpi is used for DMA transfers
 		.do_read(!flash_dmadone),
 		.do_write(0), //qpi isn't used for flash writes
