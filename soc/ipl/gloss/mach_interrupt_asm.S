@@ -16,6 +16,7 @@
  * along with this software.  If not, see <https://www.gnu.org/licenses/>.
  */
 #include "custom_ops.S"
+#include "mach_defines.h"
 
 .section .text
 
@@ -47,4 +48,19 @@ mach_timer_get:
 .global mach_timer_set
 mach_timer_set:
 	picorv32_timer_insn(a0, a0)
+	ret
+
+
+.global mach_cpu_enable
+mach_cpu_enable:
+	li a1, MISC_OFFSET
+	lw a2, MISC_RESETN_REG(a1) // REG[0] set for CPU0, REG[1] set for CPU1
+	or a0, a0, a2
+	sw a0, MISC_RESETN_REG(a1)
+	ret
+
+.global mach_cpu_getno
+mach_cpu_getno:
+	li a1, MISC_OFFSET
+	lw a0, MISC_CPU_NO(a1); // 0 for CPU0, 1 for CPU1
 	ret

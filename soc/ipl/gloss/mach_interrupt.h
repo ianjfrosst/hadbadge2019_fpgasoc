@@ -9,6 +9,9 @@
 #define INT_NO_COPPER 5
 #define INT_NO_AUDIO 6
 
+#define CPU_0 (1 << 0)
+#define CPU_1 (1 << 1)
+
 //Register file in the format the interrupt handler saves it
 typedef struct {
 	uint32_t x[32]; //note: pc is stored in x[0]. x0 always reads 0 in hw, so we don't need to save that.
@@ -46,3 +49,7 @@ void mach_int_dis(uint32_t mask);
 uint32_t mach_timer_get();
 uint32_t mach_timer_set(uint32_t timeout);
 
+
+uint32_t mach_cpu_enable(uint32_t mask);
+
+uint32_t mach_cpu_getno();
