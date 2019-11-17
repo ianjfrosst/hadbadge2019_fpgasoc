@@ -131,7 +131,8 @@ module soc(
 	`define SLICE_32(v, i) v[32*i+:32]
 	`define SLICE_4(v, i) v[4*i+:4]
 
-	parameter integer CPUCNT = 2;
+	parameter integer CPUCNT = 1;
+	// parameter integer CPUCNT = 2;
 
 //Enable this to be able to upload IPL code or data  over JTAG.
 //`define WANT_JTAG 1
