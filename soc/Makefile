@@ -3,9 +3,9 @@
 BADGE_VER ?= 4
 #Project name
 PROJ=soc
-#Seed for nextpnr. Change this to another random value if you happen to run 
+#Seed for nextpnr. Change this to another random value if you happen to run
 #into a situation that mis-synths or takes extremely long to synth the SoC.
-SEED = 37
+SEED = 200
 
 # Sources
 	# Base
@@ -255,4 +255,3 @@ ipl:
 
 .PHONY: prog clean verilator boot/ ipl
 .PRECIOUS: $(PROJ).json $(PROJ)_out_synth.config $(PROJ)_out.config
-
