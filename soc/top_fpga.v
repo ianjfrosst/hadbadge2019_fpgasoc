@@ -35,29 +35,14 @@ PLL, tristate buffers etc needed to interface with the hardware.
 module top_fpga(
 		input clk,
 		input [7:0] btn,
-`ifdef BADGE_V3
 		output [10:0] ledc,
 		output [2:0] leda,
 		inout [29:0] genio,
-`elsif BADGE_PROD
-		output [10:0] ledc,
-		output [2:0] leda,
-		inout [29:0] genio,
-`else
-		output [8:0] led,
-		inout [27:0] genio,
-`endif
 		output uart_tx,
 		input uart_rx,
-`ifdef BADGE_V3
 		output irda_tx,
 		input irda_rx,
 		output irda_sd,
-`elsif BADGE_PROD
-		output irda_tx,
-		input irda_rx,
-		output irda_sd,
-`endif
 		output pwmout,
 		output [17:0] lcd_db,
 		output lcd_rd,
@@ -148,21 +133,9 @@ module top_fpga(
 
 	wire clkint;
 
-`ifdef BADGE_V3
-	wire [9:0] led;
-
-	ledctl ledctl_inst (
-		.clk(clk),
-		.rst(0),
-		.ledc(ledc),
-		.leda(leda),
-		.led(led)
-	);
-`elsif BADGE_PROD
 	wire [13:0] led;
 	assign ledc = led[10:0];
 	assign leda = 3'b001;
-`endif
 
 	soc soc (
 		.clk24m(clk24m),
@@ -175,15 +148,9 @@ module top_fpga(
 		.uart_tx(uart_tx),
 		.uart_rx(uart_rx),
 
-`ifdef BADGE_V3
 		.irda_tx(irda_tx),
 		.irda_rx(irda_rx),
 		.irda_sd(irda_sd),
-`elsif BADGE_PROD
-		.irda_tx(irda_tx),
-		.irda_rx(irda_rx),
-		.irda_sd(irda_sd),
-`endif
 
 		.pwmout(pwmout),
 		.lcd_db(lcd_db),
@@ -277,18 +244,9 @@ module top_fpga(
 	TRELLIS_IO #(.DIR("BIDIR")) flash_tristate_wp (.I(flash_sout[2]),.T(flash_bus_qpi && !flash_oe),.B(flash_wp),.O(flash_sin[2]));
 	TRELLIS_IO #(.DIR("BIDIR")) flash_tristate_hold (.I(flash_sout[3]),.T(flash_bus_qpi && !flash_oe),.B(flash_hold),.O(flash_sin[3]));
 
-`ifdef BADGE_V3
 	for (i=0; i<30; i++) begin
-`elsif BADGE_PROD
-	for (i=0; i<30; i++) begin
-`else
-	assign genio_in[29] = 0;
-	assign genio_in[28] = 0;
-	for (i=0; i<28; i++) begin
-`endif
 		TRELLIS_IO #(.DIR("BIDIR")) genio_tristate[i] (.B(genio[i]), .I(genio_out[i]), .O(genio_in[i]), .T(!genio_oe[i]));
 	end
-
 
 	for (i=0; i<6; i++) begin
 		TRELLIS_IO #(.DIR("BIDIR")) sao1_tristate[i] (.B(sao1[i]), .I(sao1_out[i]), .O(sao1_in[i]), .T(!sao1_oe[i]));

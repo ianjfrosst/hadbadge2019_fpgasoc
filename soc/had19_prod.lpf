@@ -14,6 +14,7 @@ LOCATE COMP "ledc[6]" SITE "K20";
 LOCATE COMP "ledc[7]" SITE "K19";
 LOCATE COMP "ledc[8]" SITE "B20";
 LOCATE COMP "ledc[9]" SITE "B19";
+LOCATE COMP "ledc[10]" SITE "A18";
 LOCATE COMP "leda[0]" SITE "P19";
 LOCATE COMP "leda[1]" SITE "L18";
 LOCATE COMP "leda[2]" SITE "K18";
@@ -265,7 +266,7 @@ LOCATE COMP "adc4" SITE "D17";
 LOCATE COMP "adcrefout" SITE "A19";
 
 #has D17 as complementary input
-IOBUF PORT "adcref4" IO_TYPE=LVDS; 
+IOBUF PORT "adcref4" IO_TYPE=LVDS;
 
 LOCATE COMP "sao1[0]" SITE "A2"; #gpio1
 LOCATE COMP "sao1[1]" SITE "A3"; #gpio2
