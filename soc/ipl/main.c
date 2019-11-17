@@ -532,11 +532,67 @@ extern uint32_t *irq_stack_ptr;
 
 #define IRQ_STACK_SIZE (16*1024)
 
+#define R1 (0b11000010101)
+#define R2 (0b00110000000)
+#define R3 (0b00001101010)
+
+#define G1 (0b00110000000)
+#define G2 (0b11001111111)
+#define G3 (0b00000000000)
+
+#define B1 (0b00001101010)
+#define B2 (0b00000000000)
+#define B3 (0b11110010101)
+
+
 void main() {
 	syscall_reinit();
 	user_memfn_set(malloc, realloc, free);
 	verilator_start_trace();
 	//When testing in Verilator, put code that pokes your hardware here.
+
+	uint8_t red = 0x00;
+	uint8_t green = 0x55;
+	uint8_t blue = 0xAA;
+
+	int8_t rc = 1;
+	int8_t gc = 1;
+	int8_t bc = 1;
+
+	//Main loop
+	while(1) {
+		MISC_REG(MISC_LED_COL_REG) = 0b001;
+		MISC_REG(MISC_LED_REG) = 0x07FF;
+		for (int i = 0; i < 256; i++) {
+			if (i >= red) MISC_REG(MISC_LED_REG) &= ~R1;
+			if (i >= green) MISC_REG(MISC_LED_REG) &= ~G1;
+			if (i >= blue) MISC_REG(MISC_LED_REG) &= ~B1;
+		}
+		delay(1);
+
+		MISC_REG(MISC_LED_COL_REG) = 0b010;
+		MISC_REG(MISC_LED_REG) = 0x07FF;
+		for (int i = 0; i < 256; i++) {
+			if (i >= red) MISC_REG(MISC_LED_REG) &= ~R2;
+			if (i >= green) MISC_REG(MISC_LED_REG) &= ~G2;
+		}
+
+		delay(1);
+
+		MISC_REG(MISC_LED_COL_REG) = 0b100;
+		MISC_REG(MISC_LED_REG) = 0x07FF;
+		for (int i = 0; i < 256; i++) {
+			if (i >= red) MISC_REG(MISC_LED_REG) &= ~R3;
+			if (i >= blue) MISC_REG(MISC_LED_REG) &= ~B3;
+		}
+		delay(1);
+		red += rc;
+		if (red == 0) rc *= -1;
+		green += gc;
+		if (green == 0) gc *= -1;
+		blue += bc;
+		if (blue == 0) bc *= -1;
+	}
 
 	if (pic_load_run_file("/cart/pic_firmware.bin")) {
 		printf("Found and loaded PIC payload from cart.\n");
@@ -596,10 +652,7 @@ void main() {
 
 	// mach_cpu_enable(CPU_1);
 
-	//Main loop
-	while(1) {
-		MISC_REG(MISC_LED_REG) = 0x07FF;
-		MISC_REG(MISC_LED_COL_REG) = 0b010;
+	while (1) {
 		printf("IPL running.\n");
 		char app_name[256]="*na*";
 		int flags=0;
