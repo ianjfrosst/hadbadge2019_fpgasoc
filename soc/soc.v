@@ -659,7 +659,6 @@ module soc(
 		.rst(rst)
 	);
 
-	/*
 	reg [15:0] pic_led;
 	wire [15:0] pic_led_out;
 	// assign led = {pic_led_out[10:8], pic_led_out[5:0]};
@@ -680,7 +679,7 @@ module soc(
 		.ren(pic_select && mem_wstrb==4'b0000),
 		.ready(pic_ready)
 	);
-	*/
+
 
 	wire [15:0] audio_l;
 	wire [15:0] audio_r;
